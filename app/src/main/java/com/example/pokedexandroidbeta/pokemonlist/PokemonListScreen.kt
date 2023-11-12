@@ -173,6 +173,7 @@ fun PokedexEntry(
         mutableStateOf(defaultDominantColor)
     }
     Log.i("PokedexEntry", "Entry data: $entry")
+    println(entry)
     Box(
         contentAlignment = Center,
         modifier = modifier

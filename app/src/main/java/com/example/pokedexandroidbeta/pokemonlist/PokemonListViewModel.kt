@@ -3,12 +3,14 @@ package com.example.pokedexandroidbeta.pokemonlist
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.palette.graphics.Palette
 import com.example.pokedexandroidbeta.data.PokedexListEntry
+import com.example.pokedexandroidbeta.data.remote.responses.Pokemon
 import com.example.pokedexandroidbeta.repository.PokemonRepository
 import com.example.pokedexandroidbeta.util.Constants.PAGE_SIZE
 import com.example.pokedexandroidbeta.util.Resource
@@ -17,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
+
 
 @HiltViewModel
 class PokemonListViewModel @Inject constructor(
@@ -64,6 +67,9 @@ class PokemonListViewModel @Inject constructor(
         }
     }
 
+    suspend fun getPokemonInfo(pokemonName: String): Resource<Pokemon> {
+        return repository.getPokemonInfo(pokemonName)
+    }
     fun loadPokemonPaginated() {
         viewModelScope.launch {
             isLoading.value = true
@@ -77,7 +83,16 @@ class PokemonListViewModel @Inject constructor(
                             entry.url.takeLastWhile { it.isDigit() }
                         }
                         val url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${number}.png"
-                        PokedexListEntry(entry.name.capitalize(Locale.ROOT), url, number.toInt())
+
+                        val pokemonInfoResult = getPokemonInfo(entry.name)
+                        val data = if (pokemonInfoResult is Resource.Success) {
+                            Log.i("ListPokemon", pokemonInfoResult.data.toString())
+                            pokemonInfoResult.data
+                        } else {
+                            null
+                        }
+
+                        PokedexListEntry(entry.name.capitalize(Locale.ROOT), url, number.toInt(), data )
                     }
                     curPage++
 

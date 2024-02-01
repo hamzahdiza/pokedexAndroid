@@ -1,5 +1,6 @@
 package com.example.pokedexandroidbeta.pokemondetail
 
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -18,14 +19,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -42,13 +40,10 @@ import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 
-import coil.compose.SubcomposeAsyncImage
-import com.google.accompanist.coil.CoilImage
 import com.example.pokedexandroidbeta.data.remote.responses.Pokemon
 import com.example.pokedexandroidbeta.data.remote.responses.Type
 import com.example.pokedexandroidbeta.util.Resource
 import com.example.pokedexandroidbeta.util.parseTypeToColor
-import java.lang.Math.round
 import java.util.Locale
 import kotlin.math.roundToInt
 import com.example.pokedexandroidbeta.R
@@ -64,9 +59,15 @@ fun PokemonDetailScreen(
     pokemonImageSize: Dp = 200.dp,
     viewModel: PokemonDetailViewModel = hiltViewModel()
 ) {
+    LaunchedEffect(pokemonName) {
+        viewModel.loadDetailPokemon(pokemonName)
+    }
+    val pokemonDetail by remember { viewModel.pokedexDetailResult }
     val pokemonInfo = produceState<Resource<Pokemon>>(initialValue = Resource.Loading()) {
         value = viewModel.getPokemonInfo(pokemonName)
     }.value
+
+    pokemonDetail?.toString()?.let { Log.i("DATA DETAIL POKEMON", it) }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -112,6 +113,8 @@ fun PokemonDetailScreen(
                 .fillMaxSize()
         ) {
             if (pokemonInfo is Resource.Success) {
+                Log.i("detailpokemon", pokemonInfo.data.toString())
+
                 pokemonInfo.data?.sprites?.let {
 //                    CoilImage(
 //                        data = it.frontDefault,
